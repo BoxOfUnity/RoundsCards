@@ -41,6 +41,7 @@ namespace MoodMods.Extensions
         private static void Prefix(Gun __instance)
         {
             //__instance.GetAdditionalData().shockBlastBaseForce = 0;
+            
         }
     }
 }

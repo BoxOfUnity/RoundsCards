@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MoodMods.Scripts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +14,16 @@ namespace MoodMods.Cards
     {
         public override void SetupCard(CardInfo cardInfo, Gun gun, ApplyCardStats cardStats, CharacterStatModifiers statModifiers, Block block)
         {
-            //Edits values on card itself, which are then applied to the player in `ApplyCardStats`
+            gun.projectileSpeed = -0.5f;
         }
         public override void OnAddCard(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats)
         {
-            //Edits values on player when card is selected
+            gun.reloadTime = (99999 * 222);
+            gun.ammo = 1;
+            ObjectsToSpawn sawCloud = new ObjectsToSpawn() { };
+            sawCloud.AddToProjectile = new GameObject("SawCloudSpawner", typeof(SawCloudSpawner));
+            gun.objectsToSpawn = new ObjectsToSpawn[] { sawCloud };
+
         }
         public override void OnRemoveCard(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats)
         {
@@ -62,7 +68,7 @@ namespace MoodMods.Cards
                 {
                     positive = false,
                     stat = " to make it good.",
-                    amount = "ONE CHANCE",
+                    amount = "ONE CHANCE ",
                     simepleAmount = CardInfoStat.SimpleAmount.notAssigned
                 }
             };

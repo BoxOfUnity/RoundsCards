@@ -15,10 +15,10 @@ namespace MoodMods
     [BepInPlugin(ModId, ModName, Version)]
     // The game our mod is associated with
     [BepInProcess("Rounds.exe")]
-    public class DamageReceivers : BaseUnityPlugin
+    public class MoodMods : BaseUnityPlugin
     {
-        private const string ModId = "com.aww.rounds.MoodMod";
-        private const string ModName = "MoodMod";
+        private const string ModId = "com.aww.rounds.MoodMods";
+        private const string ModName = "MoodMods";
         public const string Version = "1.0.0"; // What version are we on (major.minor.patch)?
  
         void Awake()
@@ -30,6 +30,7 @@ namespace MoodMods
         void Start()
         {
             //CustomCard.BuildCard<myCard>();
+            CustomCard.BuildCard<TheCloudOfHorror>();
 
 
         }

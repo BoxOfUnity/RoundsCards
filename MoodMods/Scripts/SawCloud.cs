@@ -14,21 +14,21 @@ using HarmonyLib;
 
 namespace MoodMods.Scripts
 {
-    class ShockBlastAssets
+    class SawCloudAsset
     {
-        private static GameObject _shockblast = null;
+        private static GameObject _sawcloud = null;
 
-        internal static GameObject shockblast
+        internal static GameObject sawcloud
         {
             get
             {
-                if (_shockblast != null) { return _shockblast; }
+                if (_sawcloud != null) { return _sawcloud; }
                 else
                 {
-                    _shockblast = new GameObject("Shock_blast", typeof(ShockBlastEffect), typeof(PhotonView));
-                    UnityEngine.GameObject.DontDestroyOnLoad(_shockblast);
+                    _sawcloud = new GameObject("Saw_cloud", typeof(SawCloudEffect), typeof(PhotonView));
+                    UnityEngine.GameObject.DontDestroyOnLoad(_sawcloud);
 
-                    return _shockblast;
+                    return _sawcloud;
                 }
             }
             set { }
@@ -37,7 +37,7 @@ namespace MoodMods.Scripts
 
     }
 
-    public class ShockBlastSpawner : MonoBehaviour
+    public class SawCloudSpawner : MonoBehaviour
     {
         private static bool Initialized = false;
 
@@ -45,34 +45,34 @@ namespace MoodMods.Scripts
         {
             if (!Initialized)
             {
-                PhotonNetwork.PrefabPool.RegisterPrefab(ShockBlastAssets.shockblast.name, ShockBlastAssets.shockblast);
+                PhotonNetwork.PrefabPool.RegisterPrefab(SawCloudAsset.sawcloud.name, SawCloudAsset.sawcloud);
             }
         }
 
         void Start()
         {
-            MoodMods.Log("ShockBlastSpawner Start");
+            //MoodMods.Log("ShockBlastSpawner Start");
             if (!Initialized)
             {
                 Initialized = true;
                 return;
             }
-            MoodMods.Log("Checking is projectile is mine?");
+            //MoodMods.Log("Checking is projectile is mine?");
             if (!PhotonNetwork.OfflineMode && !this.gameObject.transform.parent.GetComponent<ProjectileHit>().ownPlayer.data.view.IsMine) return;
 
-            MoodMods.Log("Instantiating object");
-            var name = ShockBlastAssets.shockblast.name;
-            MoodMods.Log("Name retrieved " + name);
+            //MoodMods.Log("Instantiating object");
+            var name = SawCloudAsset.sawcloud.name;
+            //MoodMods.Log("Name retrieved " + name);
             PhotonView photonView = gameObject.transform.parent.GetComponent<PhotonView>(); ;
             if (!photonView)
             {
-                MoodMods.Log("PhotonView is null, aborting start");
+                //MoodMods.Log("PhotonView is null, aborting start");
                 return;
             }
 
-            MoodMods.Log("PhotonView: " + photonView);
+            //MoodMods.Log("PhotonView: " + photonView);
             int viewId = photonView.ViewID;
-            MoodMods.Log("ViewId retrieved " + viewId);
+            //MoodMods.Log("ViewId retrieved " + viewId);
             PhotonNetwork.Instantiate(
                 name,
                 transform.position,
@@ -84,7 +84,7 @@ namespace MoodMods.Scripts
     }
 
     [RequireComponent(typeof(PhotonView))]
-    public class ShockBlastEffect : MonoBehaviour, IPunInstantiateMagicCallback
+    public class SawCloudEffect : MonoBehaviour, IPunInstantiateMagicCallback
     {
         private Player player;
         private Gun gun;
@@ -95,15 +95,15 @@ namespace MoodMods.Scripts
             object[] instantiationData = info.photonView.InstantiationData;
             GameObject parent = PhotonView.Find((int)instantiationData[0]).gameObject;
             gameObject.transform.SetParent(parent.transform);
-            MoodMods.Log("Photon instantiate for shockblasteffect");
+            //MoodMods.Log("Photon instantiate for shockblasteffect");
             foreach (Transform child in gameObject.transform.parent)
             {
-                MoodMods.Log("Children of parent: " + child.gameObject);
+                //MoodMods.Log("Children of parent: " + child.gameObject);
             }
             projectile = gameObject.transform.parent.GetComponent<ProjectileHit>();
             foreach (Transform child in projectile.transform)
             {
-                MoodMods.Log("Children of projectile: " + child.gameObject);
+                //MoodMods.Log("Children of projectile: " + child.gameObject);
             }
             player = projectile.ownPlayer;
 
@@ -114,49 +114,28 @@ namespace MoodMods.Scripts
         {
 
         }
+        private float counter;
+        private int randnum;
         void Start()
         {
-            MoodMods.Log("Starting shockBlastEffect");
-            var visual = GenerateVisual();
-            var range = CalculateRange(gun);
-            MoodMods.Log("Visual generated, triggering");
-            TriggerVisual(visual, range);
+            counter = 0;
+            randnum = UnityEngine.Random.Range(2, 7);
+            
 
-            MoodMods.Log("Getting targets");
-            var targetsInRange = GetInRangeTargets(player.transform.position, range);
-            MoodMods.Log("Beginning explosion logic");
-            foreach (Collider2D target in targetsInRange)
+        }
+        void Update()
+        {
+
+            counter += Time.deltaTime;
+            if(counter >= randnum)
             {
-                MoodMods.Log("Checking for rigidbody on collider " + target + " from attachedRigidbody: " + target.attachedRigidbody + " from component in parent: " + target.GetComponentInParent<Rigidbody2D>());
-                var rigidbody = target.GetComponentInParent<Rigidbody2D>();
-                if (rigidbody)
-                {
-                    MoodMods.Log("rigidbody found");
-                    DoPushRigidbody(player.transform.position, rigidbody, gun.GetAdditionalData().shockBlastBaseForce * (gun.damage / 2));
-                }
-                else
-                {
-                    MoodMods.Log("Checking for player on collider " + target + ": " + target.GetComponentInParent<Player>());
-                    var otherPlayer = target.GetComponentInParent<Player>();
-                    if (otherPlayer)
-                    {
-                        MoodMods.Log("player found");
-                        DoPushCharData(player.transform.position, otherPlayer, gun.GetAdditionalData().shockBlastBaseForce * (gun.damage / 2));
-                    }
-                }
-                MoodMods.Log("Checking for damageable on collider " + target);
-                var damageable = target.transform.gameObject.GetComponent<Damagable>();
-                if (damageable)
-                {
-                    MoodMods.Log("damageable found");
-                    DoDamage(target.GetComponent<Damagable>());
-                }
+                Vector2 sawCloudSpawnVec = projectile.GetComponent<Vector2>();
+                projectile.gameObject.transform.up *= -(999 * 2);
+                Saw sawCloud = Instantiate<Saw>(new Saw());
+                sawCloud.gameObject.transform.SetYPosition(sawCloudSpawnVec.y);
+                sawCloud.gameObject.transform.SetXPosition(sawCloudSpawnVec.x);
+                sawCloud.GetComponent<Rigidbody2D>().isKinematic = false;
             }
-
-            projectile.projectileColor = Color.black;
-            projectile.bulletCanDealDeamage = false;
-            projectile.sendCollisions = false;
-            projectile.transform.position = (new Vector3(-1000f, -10000f, -1000f));
         }
 
         private ISet<Collider2D> GetInRangeTargets(Vector2 origin, float range)
@@ -164,19 +143,19 @@ namespace MoodMods.Scripts
             ISet<Collider2D> targets = new HashSet<Collider2D>();
             var colliders = Physics2D.OverlapCircleAll(origin, range);
             var playerCollider = player.GetComponent<Collider2D>();
-            MoodMods.Log("Player collider? " + playerCollider + "At position " + player.transform.position);
+            //MoodMods.Log("Player collider? " + playerCollider + "At position " + player.transform.position);
             foreach (Collider2D collider in colliders)
             {
-                MoodMods.Log("Looking at collider (" + collider + ") for gameobject " + collider.gameObject + " at position " + collider.transform.position);
+                //MoodMods.Log("Looking at collider (" + collider + ") for gameobject " + collider.gameObject + " at position " + collider.transform.position);
                 if (!collider.Equals(player.GetComponent<Collider2D>()))
                 {
-                    MoodMods.Log("Checking if collider (" + collider + ") for gameobject " + collider.gameObject + " is visible");
+                    //MoodMods.Log("Checking if collider (" + collider + ") for gameobject " + collider.gameObject + " is visible");
                     //Eliminates encountered colliders for anything without a rigidbody except players, which apparently don't have one. Go figure.
                     var list = Physics2D.RaycastAll(origin, (((Vector2)collider.transform.position) - origin).normalized, range).Select(item => item.collider).Where(item => !item.Equals(playerCollider) && (item.attachedRigidbody || (item.GetComponentInParent<Player>() && item.GetComponentInParent<Player>().playerID != player.playerID))).ToList();
-                    list.ForEach(item => MoodMods.Log("raycast item: " + item.gameObject + "is the collider we're looking at? " + (item.Equals(collider))));
+                    //list.ForEach(item => MoodMods.Log("raycast item: " + item.gameObject + "is the collider we're looking at? " + (item.Equals(collider))));
                     if (list.Count > 0 && list[0].Equals(collider))
                     {
-                        MoodMods.Log("Item matched, adding to targets: " + collider.transform.gameObject);
+                        //MoodMods.Log("Item matched, adding to targets: " + collider.transform.gameObject);
                         targets.Add(collider);
                     }
                 }
@@ -186,26 +165,26 @@ namespace MoodMods.Scripts
 
         private void DoPushRigidbody(Vector2 origin, Rigidbody2D rigidbody, float force)
         {
-            MoodMods.Log("Doing push");
-            MoodMods.Log("Adding force " + force + " in direction " + (rigidbody.position - origin).normalized + "For a net value of " + ((rigidbody.position - origin).normalized * force * rigidbody.mass));
+            //MoodMods.Log("Doing push");
+            //MoodMods.Log("Adding force " + force + " in direction " + (rigidbody.position - origin).normalized + "For a net value of " + ((rigidbody.position - origin).normalized * force * rigidbody.mass));
             rigidbody.AddForce((rigidbody.position - origin).normalized * force * rigidbody.mass * 0.75f);
         }
 
         private void DoPushCharData(Vector2 origin, Player otherPlayer, float force)
         {
-            MoodMods.Log("Doing push for player");
-            MoodMods.Log(" adding force " + force + " for total vector " + ((Vector2)otherPlayer.transform.position - origin).normalized * force * 2);
+            //MoodMods.Log("Doing push for player");
+            //MoodMods.Log(" adding force " + force + " for total vector " + ((Vector2)otherPlayer.transform.position - origin).normalized * force * 2);
             var healthHandler = otherPlayer.GetComponentInChildren<HealthHandler>();
             healthHandler.CallTakeForce(((Vector2)otherPlayer.transform.position - origin).normalized * force * 2);
-            MoodMods.Log("Post force");
+            //MoodMods.Log("Post force");
         }
 
         private void DoDamage(Damagable damageable)
         {
 
-            MoodMods.Log("Doing damage");
+            //MoodMods.Log("Doing damage");
             var totalDamage = Vector2.up * 55 * gun.damage * gun.bulletDamageMultiplier / 1.5f;
-            MoodMods.Log("Gun damage: " + gun.damage + " bulletDamageMultiplier " + gun.bulletDamageMultiplier + " Total damage: " + totalDamage + " transform? " + player.transform);
+            //MoodMods.Log("Gun damage: " + gun.damage + " bulletDamageMultiplier " + gun.bulletDamageMultiplier + " Total damage: " + totalDamage + " transform? " + player.transform);
             damageable.CallTakeDamage(Vector2.up * 55 * gun.damage * gun.bulletDamageMultiplier / 1.5f, player.transform.position);
         }
 
@@ -240,30 +219,70 @@ namespace MoodMods.Scripts
 
         private void TriggerVisual(GameObject visual, float range)
         {
-            MoodMods.Log("Setting scale");
+            //MoodMods.Log("Setting scale");
             visual.transform.localScale = new Vector3(1f, 1f, 1f);
-            MoodMods.Log("Adding removeAfterSeconds");
+            //MoodMods.Log("Adding removeAfterSeconds");
             visual.AddComponent<RemoveAfterSeconds>().seconds = 5f;
-            MoodMods.Log("Initializing line effect");
+            //MoodMods.Log("Initializing line effect");
             visual.transform.GetChild(1).GetComponent<LineEffect>().SetFieldValue("inited", false);
             typeof(LineEffect).InvokeMember("Init",
                 BindingFlags.Instance | BindingFlags.InvokeMethod | BindingFlags.NonPublic,
                 null, visual.transform.GetChild(1).GetComponent<LineEffect>(), new object[] { });
-            MoodMods.Log("Adjusting line effect");
+            //MoodMods.Log("Adjusting line effect");
             visual.transform.GetChild(1).GetComponent<LineEffect>().radius = (range);
             visual.transform.GetChild(1).GetComponent<LineEffect>().SetFieldValue("startWidth", 0.5f);
             visual.transform.position = player.transform.position;
-            MoodMods.Log("Playing effect");
+            //MoodMods.Log("Playing effect");
             visual.transform.GetChild(1).GetComponent<LineEffect>().Play();
         }
-        private float CalculateRange(Gun gun)
+        /*private float CalculateRange(Gun gun)
         {
-            var range = gun.GetAdditionalData().shockBlastRange + ((float)Math.Sqrt(gun.projectileSpeed) * 1.2f);
-            MoodMods.Log("gun.projectileSpeed: " + gun.projectileSpeed);
-            MoodMods.Log("Range: " + range);
-            return range;
+            
+        }*/
+
+
+    }
+    public class SawCloudGrowth : MonoBehaviour
+    {
+        public float timeBetweenGrows = 0f;
+        public void GrowCloud()
+        {
+
+            timeBetweenGrows += Time.deltaTime;
+            if (timeBetweenGrows > UnityEngine.Random.Range(5, 15))
+            {
+                int side;
+                if (UnityEngine.Random.Range(1, 2) == 1)
+                {
+                    side = 2;
+                }
+                else
+                {
+                    side = -2;
+                };
+                GameObject thisSaw = this.gameObject;
+                Saw newSaw = Instantiate<Saw>(new Saw());
+                if (UnityEngine.Random.Range(1, 2) == 1)
+                {
+
+                    Transform newSawTrans = newSaw.gameObject.transform;
+                    newSawTrans.SetXPosition(newSawTrans.position.x + thisSaw.GetComponent<CircleCollider2D>().radius * side);
+                    newSawTrans.SetYPosition(newSawTrans.position.y + thisSaw.GetComponent<CircleCollider2D>().radius * UnityEngine.Random.Range(-2, 2));
+
+                }
+                else
+                {
+                    Transform newSawTrans = newSaw.gameObject.transform;
+                    newSawTrans.SetYPosition(newSawTrans.position.y + thisSaw.GetComponent<CircleCollider2D>().radius * side);
+                    newSawTrans.SetXPosition(newSawTrans.position.x + thisSaw.GetComponent<CircleCollider2D>().radius * UnityEngine.Random.Range(-2, 2));
+                };
+                timeBetweenGrows = 0f;
+            }
         }
-
-
+        
+        public void Update()
+        {
+            GrowCloud();
+        }
     }
 }
