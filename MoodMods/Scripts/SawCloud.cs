@@ -135,6 +135,7 @@ namespace MoodMods.Scripts
                 sawCloud.gameObject.transform.SetYPosition(sawCloudSpawnVec.y);
                 sawCloud.gameObject.transform.SetXPosition(sawCloudSpawnVec.x);
                 sawCloud.GetComponent<Rigidbody2D>().isKinematic = false;
+                sawCloud.gameObject.AddComponent<SawCloudGrowth>();
             }
         }
 
@@ -276,6 +277,7 @@ namespace MoodMods.Scripts
                     newSawTrans.SetYPosition(newSawTrans.position.y + thisSaw.GetComponent<CircleCollider2D>().radius * side);
                     newSawTrans.SetXPosition(newSawTrans.position.x + thisSaw.GetComponent<CircleCollider2D>().radius * UnityEngine.Random.Range(-2, 2));
                 };
+                newSaw.gameObject.AddComponent<SawCloudGrowth>();
                 timeBetweenGrows = 0f;
             }
         }

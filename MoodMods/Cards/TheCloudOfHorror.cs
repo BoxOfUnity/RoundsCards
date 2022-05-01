@@ -32,11 +32,11 @@ namespace MoodMods.Cards
 
         protected override string GetTitle()
         {
-            return "The C.L.O.(u.)D.";
+            return "The Cloud Of Horror";
         }
         protected override string GetDescription()
         {
-            return "What does it stand for? Who knows.  Anyways, vaguelly in the words of my cousin, Azupiranu, (creator of the Commitment Cards,) this card turns this game into a suspense horrer movie";
+            return "Vaguelly in the words of my cousin, Azupiranu, (creator of the Commitment Cards,) this card turns this game into a suspense horrer movie";
         }
         protected override GameObject GetCardArt()
         {
